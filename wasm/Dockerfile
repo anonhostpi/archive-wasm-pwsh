@@ -230,11 +230,8 @@ COPY --from=libarchive $SYSROOT $SYSROOT
 
 # Compile
 ENV EMCC_CFLAGS='-DLIBARCHIVE_STATIC'
-RUN emcc -c ./wrapper.c -I "${SYSROOT}/include" $CFLAGS
 RUN mkdir wasm
-RUN printf "\n// @ts-nocheck\n" >pre.js
-RUN printf "\nexport const wasm = await wasmFactory()\n" >post.js
-RUN emcc ./wrapper.o \
+RUN emcc -Wl,--whole-archive \
 	"${SYSROOT}/lib/libarchive.a" \
 	"${SYSROOT}/lib/liblz4.a" \
 	"${SYSROOT}/lib/liblzo2.a" \
@@ -243,7 +240,9 @@ RUN emcc ./wrapper.o \
 	"${SYSROOT}/lib/libmbedtls.a" \
 	"${SYSROOT}/lib/libmbedx509.a" \
 	"${SYSROOT}/lib/libmbedcrypto.a" \
-	-o ./wasm/libarchive.mjs $CFLAGS --lto --pic --strip-all --extern-pre-js=/src/pre.js --extern-post-js=/src/post.js \
+	-Wl,--no-whole-archive \
+	-o ./wasm/libarchive.wasm \
+	$CFLAGS --lto --pic --strip-all \
 	-s USE_ZLIB=1 \
 	-s USE_BZIP2=1 \
 	-s POLYFILL=0 \
