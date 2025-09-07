@@ -37,8 +37,3 @@ case "$(uname -m)" in
 esac
 
 $_manager build --network host --build-arg ARM="${_arm64:-}" "$@" -o "${_dist}/" "$__dir"
-
-npx eslint --no-ignore --rule 'jsdoc/require-jsdoc: off' --rule 'prettier/prettier: off' --fix "${_dist}/libarchive.mjs" >/dev/null || true
-npx prettier --write "${_dist}/libarchive.mjs"
-sed -i.bak -e '/export default/d' "${_dist}/libarchive.mjs"
-rm -f "${_dist}/libarchive.mjs.bak"
